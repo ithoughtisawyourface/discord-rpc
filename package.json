@@ -4,8 +4,8 @@
   "description": "Discord Custom Rich Presence Selfbot for 24/7 Railway hosting",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js"
+    "start": "node --expose-gc index.js",
+    "dev": "node --expose-gc index.js"
   },
   "dependencies": {
     "discord.js-selfbot-v13": "^3.7.1",

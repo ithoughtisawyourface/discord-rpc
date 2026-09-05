@@ -1,5 +1,6 @@
 # Secrets & Local Config
 .env
+rpc_state.json
 
 # Dependencies
 node_modules/

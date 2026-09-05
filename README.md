@@ -4,13 +4,30 @@ A custom Discord Rich Presence (RPC) selfbot designed to display custom activiti
 
 ---
 
-## 🌟 Presence Configuration
+## 🌟 Features
 
-- **Activity**: `Watching Liminal Space`
-- **Line 1 (Details)**: `<3`
-- **Line 2 (State)**: `Im still alive`
-- **Large Image**: Animated GIF (`https://i.pinimg.com/originals/27/ed/a4/27eda4c49c4fa03797eefa8c406e8a9a.gif`)
-- **Healthcheck Server**: Runs on port `3000` (or Railway dynamic `$PORT`) to keep the container awake.
+- **Multi-Token Support**: Broadcasts to multiple Discord accounts simultaneously (`Discord_Token1`, `Discord_TOken2`, `Discord_Token3`).
+- **Memory Cleaner**: Monitors RAM usage and automatically frees memory and triggers garbage collection whenever memory approaches 0.4 GB (Railway free tier safe!).
+- **Persistent Elapsed Timer**: The timer continuously counts up from the initial start time. Even across restarts or crashes, the timer never resets to 0.
+- **24/7 Keep-Alive**: Built-in HTTP healthcheck server on port `3000` (or Railway dynamic `$PORT`).
+
+---
+
+## 🚀 Railway Deployment Variables
+
+In Railway under your service **"Variables"** tab, add:
+
+| Variable | Description |
+| :--- | :--- |
+| `Discord_Token1` | First Discord Account Token |
+| `Discord_TOken2` | Second Discord Account Token |
+| `Discord_Token3` | Third Discord Account Token |
+| `APP_NAME` | `Liminal Space` |
+| `ACTIVITY_TYPE` | `WATCHING` |
+| `DETAILS` | `<3` |
+| `STATE` | `Im still alive` |
+| `LARGE_IMAGE_URL` | `https://i.pinimg.com/originals/27/ed/a4/27eda4c49c4fa03797eefa8c406e8a9a.gif` |
+| `LARGE_IMAGE_TEXT` | `Liminal Space` |
 
 ---
 
