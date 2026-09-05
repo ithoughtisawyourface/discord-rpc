@@ -5,85 +5,18 @@ const path = require('path');
 const { Client, RichPresence, Options } = require('discord.js-selfbot-v13');
 
 // ---------------------------------------------------------------------------
-// 1. Process & Crash Protection
+// 1. Bulletproof Process Crash Protection
 // ---------------------------------------------------------------------------
 process.on('uncaughtException', (err) => {
-  console.error('[CRASH PREVENTION] Uncaught Exception trapped:', err.message);
+  console.error('[CRASH PREVENTION] Trapped Uncaught Exception:', err.stack || err);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('[CRASH PREVENTION] Unhandled Rejection trapped:', reason);
+  console.error('[CRASH PREVENTION] Trapped Unhandled Rejection:', reason);
 });
 
 // ---------------------------------------------------------------------------
-// 2. Persistent Timer Management (Never resets to 0, even after restart)
-// ---------------------------------------------------------------------------
-const STATE_FILE = path.join(__dirname, 'rpc_state.json');
-
-function getPersistentStartTime() {
-  // If user provided a specific timestamp in environment variables, use it
-  if (process.env.START_TIMESTAMP && !isNaN(Number(process.env.START_TIMESTAMP))) {
-    return Number(process.env.START_TIMESTAMP);
-  }
-
-  // Otherwise check local state file
-  try {
-    if (fs.existsSync(STATE_FILE)) {
-      const data = JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
-      if (data && data.startTime && !isNaN(Number(data.startTime))) {
-        console.log(`[Timer] Resumed persistent start time from file: ${new Date(Number(data.startTime)).toISOString()}`);
-        return Number(data.startTime);
-      }
-    }
-  } catch (err) {
-    console.warn('[Timer] Could not read rpc_state.json, creating a new timestamp:', err.message);
-  }
-
-  // Initialize new start time and persist
-  const newStartTime = Date.now();
-  try {
-    fs.writeFileSync(STATE_FILE, JSON.stringify({ startTime: newStartTime }, null, 2));
-    console.log(`[Timer] Initialized new persistent start time: ${new Date(newStartTime).toISOString()}`);
-  } catch (err) {
-    console.warn('[Timer] Could not write rpc_state.json:', err.message);
-  }
-  return newStartTime;
-}
-
-const START_TIMESTAMP = getPersistentStartTime();
-
-// ---------------------------------------------------------------------------
-// 3. Multi-Token Discovery (Case-Insensitive for Railway Variables)
-// ---------------------------------------------------------------------------
-function getDiscordTokens() {
-  const tokenSet = new Set();
-
-  for (const [key, value] of Object.entries(process.env)) {
-    if (!value || typeof value !== 'string') continue;
-    const cleanVal = value.trim();
-    if (!cleanVal) continue;
-
-    // Match Discord_Token1, Discord_TOken2, Discord_Token3, DISCORD_TOKEN, etc.
-    if (/^discord.*token/i.test(key)) {
-      tokenSet.add(cleanVal);
-    }
-  }
-
-  return Array.from(tokenSet);
-}
-
-const TOKENS = getDiscordTokens();
-
-if (TOKENS.length === 0) {
-  console.error('[ERROR] No Discord tokens found in environment variables!');
-  console.error('Please set Discord_Token1, Discord_TOken2, Discord_Token3, or DISCORD_TOKEN.');
-  process.exit(1);
-}
-
-console.log(`[Startup] Detected ${TOKENS.length} Discord token(s) configured.`);
-
-// ---------------------------------------------------------------------------
-// 4. Configuration Variables
+// 2. Configuration Settings
 // ---------------------------------------------------------------------------
 const PORT = process.env.PORT || 3000;
 const APP_NAME = process.env.APP_NAME || 'Liminal Space';
@@ -93,95 +26,162 @@ const STATE = process.env.STATE || 'Im still alive';
 const LARGE_IMAGE_URL = process.env.LARGE_IMAGE_URL || 'https://i.pinimg.com/originals/27/ed/a4/27eda4c49c4fa03797eefa8c406e8a9a.gif';
 const LARGE_IMAGE_TEXT = process.env.LARGE_IMAGE_TEXT || 'Liminal Space';
 const APPLICATION_ID = process.env.APPLICATION_ID || '1077283441369944227';
-
-// ---------------------------------------------------------------------------
-// 5. Active Memory Cleaner (Triggered at 0.4 GB / 400 MB)
-// ---------------------------------------------------------------------------
-const MEMORY_THRESHOLD_MB = 400; // 0.4 GB
+const MEMORY_THRESHOLD_MB = 400; // 0.4 GB Railway threshold
 const MEMORY_THRESHOLD_BYTES = MEMORY_THRESHOLD_MB * 1024 * 1024;
 
-function runMemoryCleaner(clients) {
-  const mem = process.memoryUsage();
-  const rssMB = (mem.rss / 1024 / 1024).toFixed(2);
-  const heapMB = (mem.heapUsed / 1024 / 1024).toFixed(2);
+// ---------------------------------------------------------------------------
+// 3. Persistent Elapsed Timer (Never resets across crashes or restarts)
+// ---------------------------------------------------------------------------
+const STATE_FILE = path.join(__dirname, 'rpc_state.json');
 
-  if (mem.rss >= MEMORY_THRESHOLD_BYTES) {
-    console.warn(`[Memory Alert] RSS memory reached ${rssMB} MB (Threshold: ${MEMORY_THRESHOLD_MB} MB). Cleaning memory...`);
+function getPersistentStartTime() {
+  if (process.env.START_TIMESTAMP && !isNaN(Number(process.env.START_TIMESTAMP))) {
+    return Number(process.env.START_TIMESTAMP);
+  }
 
-    // 1. Clear caches from all active clients
-    for (const client of clients) {
-      try {
-        if (client && client.isReady()) {
-          client.users?.cache?.clear();
-          client.channels?.cache?.clear();
-          client.guilds?.cache?.clear();
-        }
-      } catch (err) {
-        // Safe fail
+  try {
+    if (fs.existsSync(STATE_FILE)) {
+      const data = JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
+      if (data && data.startTime && !isNaN(Number(data.startTime))) {
+        console.log(`[Timer] Resumed persistent timer from state file: ${new Date(Number(data.startTime)).toISOString()}`);
+        return Number(data.startTime);
       }
     }
+  } catch (err) {
+    console.warn('[Timer Warning] Could not read rpc_state.json:', err.message);
+  }
 
-    // 2. Invoke V8 Garbage Collector if available (--expose-gc)
-    if (typeof global.gc === 'function') {
-      try {
-        global.gc();
-        const afterMem = process.memoryUsage();
-        const afterRssMB = (afterMem.rss / 1024 / 1024).toFixed(2);
-        console.log(`[Memory Cleaner] GC completed successfully! RSS lowered from ${rssMB} MB to ${afterRssMB} MB.`);
-      } catch (gcErr) {
-        console.error('[Memory Cleaner] GC error:', gcErr.message);
+  const newTime = Date.now();
+  try {
+    fs.writeFileSync(STATE_FILE, JSON.stringify({ startTime: newTime }, null, 2));
+    console.log(`[Timer] Initialized persistent timer: ${new Date(newTime).toISOString()}`);
+  } catch (err) {
+    console.warn('[Timer Warning] Could not write rpc_state.json:', err.message);
+  }
+  return newTime;
+}
+
+const START_TIMESTAMP = getPersistentStartTime();
+
+// ---------------------------------------------------------------------------
+// 4. Token Discovery Engine (Handles any casing, quotes, or variable names)
+// ---------------------------------------------------------------------------
+function cleanToken(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  let t = raw.trim();
+  // Strip enclosing quotes if user pasted with quotes
+  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+    t = t.slice(1, -1).trim();
+  }
+  return t.length > 20 ? t : null;
+}
+
+function discoverTokens() {
+  const tokenSet = new Set();
+
+  for (const [key, val] of Object.entries(process.env)) {
+    if (!val) continue;
+
+    const lower = key.toLowerCase();
+    // Must contain both 'discord' and 'token' to prevent matching system/railway tokens (e.g. RAILWAY_TOKEN, CSRF_TOKEN)
+    if (lower.includes('discord') && lower.includes('token')) {
+      const cleaned = cleanToken(val);
+      if (cleaned) {
+        tokenSet.add(cleaned);
       }
-    } else {
-      console.warn('[Memory Cleaner] Notice: Node.js was not started with --expose-gc, garbage collection will run automatically.');
     }
   }
+
+  return Array.from(tokenSet);
 }
 
 // ---------------------------------------------------------------------------
-// 6. HTTP Keep-Alive & Health Monitoring Server
+// 5. Active HTTP Keep-Alive & Health Check Server (Starts Immediately)
 // ---------------------------------------------------------------------------
-const clients = [];
-const clientStatusMap = new Map();
+const activeClients = new Map(); // token -> { client, tag, id, status, lastError }
 
 const server = http.createServer((req, res) => {
   if (req.url === '/' || req.url === '/health') {
     const mem = process.memoryUsage();
-    const stats = {
-      status: 'online',
-      active_tokens: TOKENS.length,
-      connected_accounts: Array.from(clientStatusMap.values()),
+    const accounts = Array.from(activeClients.values()).map(a => ({
+      tag: a.tag || 'connecting...',
+      id: a.id || 'unknown',
+      status: a.status,
+      error: a.lastError || null
+    }));
+
+    const responseData = {
+      status: accounts.some(a => a.status === 'active') ? 'online' : 'waiting_or_connecting',
+      tokens_detected: activeClients.size,
+      connected_accounts: accounts,
       memory: {
         rss_mb: +(mem.rss / 1024 / 1024).toFixed(2),
         heap_used_mb: +(mem.heapUsed / 1024 / 1024).toFixed(2),
-        threshold_mb: MEMORY_THRESHOLD_MB
+        threshold_mb: MEMORY_THRESHOLD_MB,
+        cleaner_active: true
       },
       timer: {
         started_at: new Date(START_TIMESTAMP).toISOString(),
         elapsed_seconds: Math.floor((Date.now() - START_TIMESTAMP) / 1000)
       },
-      process_uptime_seconds: Math.floor(process.uptime()),
+      uptime_seconds: Math.floor(process.uptime()),
       timestamp: new Date().toISOString()
     };
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(stats, null, 2));
+    res.end(JSON.stringify(responseData, null, 2));
   } else {
-    res.writeHead(404);
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Not Found');
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`[HTTP Server] Listening on port ${PORT} for 24/7 Railway keep-alive ping`);
+// Bind to 0.0.0.0 so Railway reverse proxy can reach it without network block
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`[HTTP Server] Healthcheck & Keep-Alive server listening on 0.0.0.0:${PORT}`);
 });
 
-// Periodic memory check every 30 seconds
-setInterval(() => {
-  runMemoryCleaner(clients);
-}, 30 * 1000);
+// ---------------------------------------------------------------------------
+// 6. Memory Cleaner (< 0.4 GB)
+// ---------------------------------------------------------------------------
+function cleanMemory() {
+  const mem = process.memoryUsage();
+  const rssMB = (mem.rss / 1024 / 1024).toFixed(2);
+
+  if (mem.rss >= MEMORY_THRESHOLD_BYTES) {
+    console.warn(`[Memory Monitor] RSS reached ${rssMB} MB (Threshold: ${MEMORY_THRESHOLD_MB} MB). Purging memory...`);
+
+    // Clear caches on all active clients
+    for (const entry of activeClients.values()) {
+      try {
+        if (entry.client && entry.client.isReady()) {
+          entry.client.users?.cache?.clear();
+          entry.client.channels?.cache?.clear();
+          entry.client.guilds?.cache?.clear();
+        }
+      } catch (err) {
+        // Safe ignore
+      }
+    }
+
+    // Trigger V8 Garbage Collection
+    if (typeof global.gc === 'function') {
+      try {
+        global.gc();
+        const postMem = process.memoryUsage();
+        const postMB = (postMem.rss / 1024 / 1024).toFixed(2);
+        console.log(`[Memory Cleaner] GC successful. RAM reduced from ${rssMB} MB to ${postMB} MB.`);
+      } catch (err) {
+        console.error('[Memory Cleaner Error]:', err.message);
+      }
+    }
+  }
+}
+
+setInterval(cleanMemory, 30 * 1000);
 
 // ---------------------------------------------------------------------------
-// 7. Discord Client Factory & Presence Engine
+// 7. Rich Presence Builder
 // ---------------------------------------------------------------------------
 async function buildPresence(client) {
   const presence = new RichPresence(client)
@@ -216,8 +216,14 @@ async function buildPresence(client) {
   return presence;
 }
 
-function startDiscordClient(token, index) {
-  // Ultra-lean client setup: strip memory-heavy caches to guarantee < 0.4 GB
+// ---------------------------------------------------------------------------
+// 8. Discord Client Manager & Auto-Reconnect
+// ---------------------------------------------------------------------------
+function launchClient(token, index) {
+  if (activeClients.has(token)) return;
+
+  console.log(`[Client #${index + 1}] Initializing client connection...`);
+
   const client = new Client({
     checkUpdate: false,
     autoRedo: true,
@@ -232,74 +238,107 @@ function startDiscordClient(token, index) {
     })
   });
 
-  clients.push(client);
+  const record = {
+    client,
+    tag: null,
+    id: null,
+    status: 'connecting',
+    lastError: null
+  };
+
+  activeClients.set(token, record);
 
   client.on('ready', async () => {
-    console.log(`[Discord Client #${index + 1}] Logged in as ${client.user.tag} (ID: ${client.user.id})`);
-    clientStatusMap.set(index, {
-      index: index + 1,
-      tag: client.user.tag,
-      id: client.user.id,
-      status: 'active'
-    });
+    record.tag = client.user.tag;
+    record.id = client.user.id;
+    record.status = 'active';
+    record.lastError = null;
+    console.log(`[Client #${index + 1}] Connected as ${client.user.tag} (ID: ${client.user.id})`);
 
     try {
       const presence = await buildPresence(client);
       client.user.setPresence({ activities: [presence] });
-      console.log(`[Discord Client #${index + 1}] Rich Presence activated: Watching ${APP_NAME}`);
+      console.log(`[Client #${index + 1}] RPC Live: Watching ${APP_NAME} | ${DETAILS} | ${STATE}`);
     } catch (err) {
-      console.error(`[Discord Client #${index + 1}] Failed to set presence:`, err.message);
+      console.error(`[Client #${index + 1}] Presence set error:`, err.message);
     }
 
-    // Refresh presence every 30 minutes without changing start time
+    // Refresh presence every 30 minutes
     setInterval(async () => {
       if (client.isReady()) {
         try {
           const presence = await buildPresence(client);
           client.user.setPresence({ activities: [presence] });
-        } catch (err) {
-          console.error(`[Discord Client #${index + 1}] Periodic presence refresh error:`, err.message);
-        }
+        } catch {}
       }
     }, 30 * 60 * 1000);
   });
 
   client.on('error', (err) => {
-    console.error(`[Discord Client #${index + 1} Error]:`, err.message);
+    console.error(`[Client #${index + 1} Error]:`, err.message);
+    record.lastError = err.message;
   });
 
   client.on('shardDisconnect', (event, shardId) => {
-    console.warn(`[Discord Client #${index + 1}] Shard ${shardId} disconnected (${event.code}). Auto-reconnecting...`);
+    console.warn(`[Client #${index + 1}] Shard ${shardId} disconnected (${event.code}). Reconnecting...`);
+    record.status = 'reconnecting';
   });
 
-  client.login(token).catch((err) => {
-    console.error(`[Discord Client #${index + 1} Login Failed]:`, err.message);
-    clientStatusMap.set(index, {
-      index: index + 1,
-      status: 'login_error',
-      error: err.message
-    });
+  async function tryLogin() {
+    try {
+      await client.login(token);
+    } catch (err) {
+      console.error(`[Client #${index + 1} Login Failed]:`, err.message);
+      record.status = 'login_failed';
+      record.lastError = err.message;
+      // Retry login in 60 seconds without crashing
+      setTimeout(tryLogin, 60 * 1000);
+    }
+  }
+
+  tryLogin();
+}
+
+// ---------------------------------------------------------------------------
+// 9. Dynamic Token Detection Loop (Does NOT crash if tokens aren't entered yet)
+// ---------------------------------------------------------------------------
+function checkAndStartTokens() {
+  const tokens = discoverTokens();
+
+  if (tokens.length === 0) {
+    if (activeClients.size === 0) {
+      console.log('[Waiting for Tokens] No Discord tokens detected yet in Railway environment variables.');
+      console.log('HTTP healthcheck is RUNNING to keep container alive. Add Discord_Token1 in Railway Variables to start.');
+    }
+    return;
+  }
+
+  tokens.forEach((tok, idx) => {
+    if (!activeClients.has(tok)) {
+      launchClient(tok, idx);
+    }
   });
 }
 
-// Start all configured tokens
-TOKENS.forEach((token, idx) => {
-  startDiscordClient(token, idx);
-});
+// Initial check
+checkAndStartTokens();
+
+// Check every 15 seconds so if user adds or updates variables, they start automatically
+setInterval(checkAndStartTokens, 15 * 1000);
 
 // ---------------------------------------------------------------------------
-// 8. Graceful Shutdown
+// 10. Graceful Shutdown
 // ---------------------------------------------------------------------------
-function shutdown(signal) {
-  console.log(`\n[System] ${signal} received. Cleaning up...`);
+function handleShutdown(sig) {
+  console.log(`\n[System] ${sig} signal received. Cleaning up...`);
   server.close();
-  for (const client of clients) {
+  for (const entry of activeClients.values()) {
     try {
-      client.destroy();
+      entry.client.destroy();
     } catch {}
   }
   process.exit(0);
 }
 
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => handleShutdown('SIGINT'));
+process.on('SIGTERM', () => handleShutdown('SIGTERM'));
