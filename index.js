@@ -73,22 +73,40 @@ function cleanToken(raw) {
   if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
     t = t.slice(1, -1).trim();
   }
-  return t.length > 20 ? t : null;
+  return t;
+}
+
+function isDiscordToken(token) {
+  if (!token || typeof token !== 'string') return false;
+  const clean = token.trim().replace(/^["']|["']$/g, '');
+  // Discord tokens are 3 base64url segments separated by dots
+  return /^[A-Za-z0-9_\-]{20,}\.[A-Za-z0-9_\-]{4,}\.[A-Za-z0-9_\-]{20,}$/.test(clean);
 }
 
 function discoverTokens() {
   const tokenSet = new Set();
 
-  for (const [key, val] of Object.entries(process.env)) {
-    if (!val) continue;
+  for (const [key, rawVal] of Object.entries(process.env)) {
+    if (!rawVal) continue;
+    const lowerKey = key.toLowerCase();
 
-    const lower = key.toLowerCase();
-    // Must contain both 'discord' and 'token' to prevent matching system/railway tokens (e.g. RAILWAY_TOKEN, CSRF_TOKEN)
-    if (lower.includes('discord') && lower.includes('token')) {
-      const cleaned = cleanToken(val);
-      if (cleaned) {
-        tokenSet.add(cleaned);
-      }
+    // Key must include 'token' and must NOT be a cloud/system variable
+    if (
+      !lowerKey.includes('token') ||
+      lowerKey.includes('path') ||
+      lowerKey.startsWith('railway') ||
+      lowerKey.startsWith('github') ||
+      lowerKey.startsWith('gh_') ||
+      lowerKey.startsWith('nixpacks') ||
+      lowerKey.startsWith('csrf') ||
+      lowerKey.startsWith('antigravity')
+    ) {
+      continue;
+    }
+
+    const val = cleanToken(rawVal);
+    if (val && isDiscordToken(val)) {
+      tokenSet.add(val);
     }
   }
 
@@ -277,6 +295,10 @@ function launchClient(token, index) {
   client.on('error', (err) => {
     console.error(`[Client #${index + 1} Error]:`, err.message);
     record.lastError = err.message;
+  });
+
+  client.on('rateLimit', (info) => {
+    console.warn(`[Client #${index + 1} Rate Limit]: Encountered limit (${info.timeout}ms). Holding safely...`);
   });
 
   client.on('shardDisconnect', (event, shardId) => {
