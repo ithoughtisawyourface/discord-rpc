@@ -1,0 +1,26 @@
+{
+  "name": "discord-rpc-city",
+  "version": "1.0.0",
+  "description": "Discord Custom Rich Presence Selfbot for 24/7 Railway hosting",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "discord.js-selfbot-v13": "^3.7.1",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "discord",
+    "rpc",
+    "rich-presence",
+    "selfbot",
+    "railway"
+  ],
+  "author": "",
+  "license": "ISC"
+}
