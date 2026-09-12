@@ -22,6 +22,7 @@ const PORT = process.env.PORT || 3000;
 
 // Legacy values to ignore if leftover in Railway environment variables
 const LEGACY_APP_NAMES = ['Liminal Space', 'City'];
+const LEGACY_ACTIVITIES = ['WATCHING'];
 const LEGACY_DETAILS = ['<3'];
 const LEGACY_STATES = ['Im still alive', 'play.arcturusmc.org'];
 const LEGACY_IMAGES = ['https://i.pinimg.com/originals/27/ed/a4/27eda4c49c4fa03797eefa8c406e8a9a.gif'];
@@ -30,8 +31,8 @@ const LEGACY_APP_IDS = ['1077283441369944227'];
 const rawAppName = process.env.APP_NAME ? process.env.APP_NAME.trim() : null;
 const APP_NAME = (rawAppName && !LEGACY_APP_NAMES.includes(rawAppName)) ? rawAppName : 'Arcturus';
 
-const rawActivityType = process.env.ACTIVITY_TYPE ? process.env.ACTIVITY_TYPE.trim() : null;
-const ACTIVITY_TYPE = rawActivityType || 'PLAYING';
+const rawActivityType = process.env.ACTIVITY_TYPE ? process.env.ACTIVITY_TYPE.trim().toUpperCase() : null;
+const ACTIVITY_TYPE = (rawActivityType && !LEGACY_ACTIVITIES.includes(rawActivityType) && rawActivityType !== 'WATCHING') ? (rawActivityType === 'PLAYING' || rawActivityType === '0' ? 0 : rawActivityType) : 0;
 
 const rawDetails = process.env.DETAILS ? process.env.DETAILS.trim() : null;
 const DETAILS = (rawDetails && !LEGACY_DETAILS.includes(rawDetails)) ? rawDetails : 'Playing Factions';
@@ -337,7 +338,8 @@ function launchClient(token, index) {
     try {
       const presence = await buildPresence(client);
       client.user.setPresence({ activities: [presence] });
-      console.log(`[Client #${index + 1}] RPC Live: ${ACTIVITY_TYPE} ${APP_NAME}${DETAILS ? ' | ' + DETAILS : ''}${STATE ? ' | ' + STATE : ''}`);
+      const typeLabel = (ACTIVITY_TYPE === 0 || ACTIVITY_TYPE === 'PLAYING') ? 'PLAYING' : ACTIVITY_TYPE;
+      console.log(`[Client #${index + 1}] RPC Live: ${typeLabel} ${APP_NAME}${DETAILS ? ' | ' + DETAILS : ''}${STATE ? ' | ' + STATE : ''}`);
     } catch (err) {
       console.error(`[Client #${index + 1}] Presence set error:`, err.message);
     }
