@@ -26,7 +26,7 @@ In Railway under your service **"Variables"** tab, you can configure these varia
 | `ACTIVITY_TYPE` | `PLAYING` | Activity type (`PLAYING`, `WATCHING`, `LISTENING`, `COMPETING`) |
 | `DETAILS` | `Playing Factions` | First line under game title |
 | `STATE` | `play.arcturusmc.org` | Second line under game title |
-| `LARGE_IMAGE_URL` | `https://i.pinimg.com/736x/86/aa/a3/86aaa35ed00c6f3469fa95cd79a04abb.jpg` | Main rich presence image URL |
+| `LARGE_IMAGE_URL` | `https://files.catbox.moe/tzppxh.png` | Main rich presence image URL |
 | `LARGE_IMAGE_TEXT` | `Arcturus` | Hover tooltip for the large image |
 | `BUTTON1_NAME` | `Discord 💎` | Name for Button 1 |
 | `BUTTON1_URL` | `https://discord.com/invite/DTR6serkeM` | URL for Button 1 |
@@ -54,7 +54,7 @@ APP_NAME=Arcturus
 ACTIVITY_TYPE=PLAYING
 DETAILS=Playing Factions
 STATE=play.arcturusmc.org
-LARGE_IMAGE_URL=https://i.pinimg.com/736x/86/aa/a3/86aaa35ed00c6f3469fa95cd79a04abb.jpg
+LARGE_IMAGE_URL=https://files.catbox.moe/tzppxh.png
 LARGE_IMAGE_TEXT=Arcturus
 BUTTON1_NAME=Discord 💎
 BUTTON1_URL=https://discord.com/invite/DTR6serkeM

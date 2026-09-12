@@ -23,7 +23,7 @@ const APP_NAME = process.env.APP_NAME || 'Arcturus';
 const ACTIVITY_TYPE = process.env.ACTIVITY_TYPE || 'PLAYING';
 const DETAILS = process.env.DETAILS || 'Playing Factions';
 const STATE = process.env.STATE || 'play.arcturusmc.org';
-const LARGE_IMAGE_URL = process.env.LARGE_IMAGE_URL || 'https://i.pinimg.com/736x/86/aa/a3/86aaa35ed00c6f3469fa95cd79a04abb.jpg';
+const LARGE_IMAGE_URL = process.env.LARGE_IMAGE_URL || 'https://files.catbox.moe/tzppxh.png';
 const LARGE_IMAGE_TEXT = process.env.LARGE_IMAGE_TEXT || 'Arcturus';
 const BUTTON1_NAME = process.env.BUTTON1_NAME || 'Discord 💎';
 const BUTTON1_URL = process.env.BUTTON1_URL || 'https://discord.com/invite/DTR6serkeM';
@@ -152,6 +152,15 @@ const server = http.createServer((req, res) => {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(responseData, null, 2));
+  } else if (req.url === '/logo.png') {
+    const logoPath = path.join(__dirname, 'assets', 'logo.png');
+    if (fs.existsSync(logoPath)) {
+      res.writeHead(200, { 'Content-Type': 'image/png' });
+      fs.createReadStream(logoPath).pipe(res);
+      return;
+    }
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Logo not found');
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Not Found');
