@@ -29,7 +29,8 @@ const BUTTON1_NAME = process.env.BUTTON1_NAME || 'Discord 💎';
 const BUTTON1_URL = process.env.BUTTON1_URL || 'https://discord.com/invite/DTR6serkeM';
 const BUTTON2_NAME = process.env.BUTTON2_NAME || 'Web 💫';
 const BUTTON2_URL = process.env.BUTTON2_URL || 'https://www.arcturusmc.org/';
-const APPLICATION_ID = process.env.APPLICATION_ID || '1077283441369944227';
+const APPLICATION_ID = process.env.APPLICATION_ID || '1548379245787480074';
+const PUBLIC_KEY = process.env.PUBLIC_KEY || 'f57dfc860d81a34113e9f676d2975ed37bbf9d7121c3c485cfbb22770b7c6ff9';
 const MEMORY_THRESHOLD_MB = 400; // 0.4 GB Railway threshold
 const MEMORY_THRESHOLD_BYTES = MEMORY_THRESHOLD_MB * 1024 * 1024;
 

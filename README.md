@@ -32,6 +32,8 @@ In Railway under your service **"Variables"** tab, you can configure these varia
 | `BUTTON1_URL` | `https://discord.com/invite/DTR6serkeM` | URL for Button 1 |
 | `BUTTON2_NAME` | `Web 💫` | Name for Button 2 |
 | `BUTTON2_URL` | `https://www.arcturusmc.org/` | URL for Button 2 |
+| `APPLICATION_ID` | `1548379245787480074` | Discord Application ID for assets |
+| `PUBLIC_KEY` | `f57dfc860d81a34113e9f676d2975ed37bbf9d7121c3c485cfbb22770b7c6ff9` | Discord Application Public Key |
 | `PORT` | `3000` | Web server port for health check |
 
 ---
@@ -60,6 +62,8 @@ BUTTON1_NAME=Discord 💎
 BUTTON1_URL=https://discord.com/invite/DTR6serkeM
 BUTTON2_NAME=Web 💫
 BUTTON2_URL=https://www.arcturusmc.org/
+APPLICATION_ID=1548379245787480074
+PUBLIC_KEY=f57dfc860d81a34113e9f676d2975ed37bbf9d7121c3c485cfbb22770b7c6ff9
 PORT=3000
 ```
 
