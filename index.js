@@ -19,17 +19,37 @@ process.on('unhandledRejection', (reason, promise) => {
 // 2. Configuration Settings
 // ---------------------------------------------------------------------------
 const PORT = process.env.PORT || 3000;
-const APP_NAME = process.env.APP_NAME || 'Arcturus';
-const ACTIVITY_TYPE = process.env.ACTIVITY_TYPE || 'PLAYING';
-const DETAILS = process.env.DETAILS || 'Playing Factions';
-const STATE = process.env.STATE || '';
-const LARGE_IMAGE_URL = process.env.LARGE_IMAGE_URL || 'https://i.pinimg.com/736x/f1/a6/59/f1a6598e51b4659a5b903fa068dc9686.jpg';
+
+// Legacy values to ignore if leftover in Railway environment variables
+const LEGACY_APP_NAMES = ['Liminal Space', 'City'];
+const LEGACY_DETAILS = ['<3'];
+const LEGACY_STATES = ['Im still alive', 'play.arcturusmc.org'];
+const LEGACY_IMAGES = ['https://i.pinimg.com/originals/27/ed/a4/27eda4c49c4fa03797eefa8c406e8a9a.gif'];
+const LEGACY_APP_IDS = ['1077283441369944227'];
+
+const rawAppName = process.env.APP_NAME ? process.env.APP_NAME.trim() : null;
+const APP_NAME = (rawAppName && !LEGACY_APP_NAMES.includes(rawAppName)) ? rawAppName : 'Arcturus';
+
+const rawActivityType = process.env.ACTIVITY_TYPE ? process.env.ACTIVITY_TYPE.trim() : null;
+const ACTIVITY_TYPE = rawActivityType || 'PLAYING';
+
+const rawDetails = process.env.DETAILS ? process.env.DETAILS.trim() : null;
+const DETAILS = (rawDetails && !LEGACY_DETAILS.includes(rawDetails)) ? rawDetails : 'Playing Factions';
+
+const rawState = process.env.STATE ? process.env.STATE.trim() : null;
+const STATE = (rawState && !LEGACY_STATES.includes(rawState)) ? rawState : '';
+
+const rawLargeImage = process.env.LARGE_IMAGE_URL ? process.env.LARGE_IMAGE_URL.trim() : null;
+const LARGE_IMAGE_URL = (rawLargeImage && !LEGACY_IMAGES.includes(rawLargeImage)) ? rawLargeImage : 'https://i.pinimg.com/736x/f1/a6/59/f1a6598e51b4659a5b903fa068dc9686.jpg';
+
 const LARGE_IMAGE_TEXT = process.env.LARGE_IMAGE_TEXT || 'Arcturus';
 const BUTTON1_NAME = process.env.BUTTON1_NAME || 'Discord 💎';
 const BUTTON1_URL = process.env.BUTTON1_URL || 'https://discord.com/invite/DTR6serkeM';
 const BUTTON2_NAME = process.env.BUTTON2_NAME || 'Web 💫';
 const BUTTON2_URL = process.env.BUTTON2_URL || 'https://www.arcturusmc.org/';
-const APPLICATION_ID = process.env.APPLICATION_ID || '1548379245787480074';
+
+const rawAppId = process.env.APPLICATION_ID ? process.env.APPLICATION_ID.trim() : null;
+const APPLICATION_ID = (rawAppId && !LEGACY_APP_IDS.includes(rawAppId)) ? rawAppId : '1548379245787480074';
 const PUBLIC_KEY = process.env.PUBLIC_KEY || 'f57dfc860d81a34113e9f676d2975ed37bbf9d7121c3c485cfbb22770b7c6ff9';
 const MEMORY_THRESHOLD_MB = 400; // 0.4 GB Railway threshold
 const MEMORY_THRESHOLD_BYTES = MEMORY_THRESHOLD_MB * 1024 * 1024;
