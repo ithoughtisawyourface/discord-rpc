@@ -22,8 +22,8 @@ const PORT = process.env.PORT || 3000;
 const APP_NAME = process.env.APP_NAME || 'Arcturus';
 const ACTIVITY_TYPE = process.env.ACTIVITY_TYPE || 'PLAYING';
 const DETAILS = process.env.DETAILS || 'Playing Factions';
-const STATE = process.env.STATE || 'play.arcturusmc.org';
-const LARGE_IMAGE_URL = process.env.LARGE_IMAGE_URL || 'https://files.catbox.moe/tzppxh.png';
+const STATE = process.env.STATE || '';
+const LARGE_IMAGE_URL = process.env.LARGE_IMAGE_URL || 'https://i.pinimg.com/736x/b9/f5/59/b9f559f80e635d1558e4ca732b15ef2e.jpg';
 const LARGE_IMAGE_TEXT = process.env.LARGE_IMAGE_TEXT || 'Arcturus';
 const BUTTON1_NAME = process.env.BUTTON1_NAME || 'Discord 💎';
 const BUTTON1_URL = process.env.BUTTON1_URL || 'https://discord.com/invite/DTR6serkeM';
@@ -219,9 +219,15 @@ async function buildPresence(client) {
     .setApplicationId(APPLICATION_ID)
     .setType(ACTIVITY_TYPE)
     .setName(APP_NAME)
-    .setDetails(DETAILS)
-    .setState(STATE)
     .setStartTimestamp(START_TIMESTAMP);
+
+  if (DETAILS) {
+    presence.setDetails(DETAILS);
+  }
+
+  if (STATE) {
+    presence.setState(STATE);
+  }
 
   if (LARGE_IMAGE_URL) {
     try {
@@ -310,7 +316,7 @@ function launchClient(token, index) {
     try {
       const presence = await buildPresence(client);
       client.user.setPresence({ activities: [presence] });
-      console.log(`[Client #${index + 1}] RPC Live: ${ACTIVITY_TYPE} ${APP_NAME} | ${DETAILS} | ${STATE}`);
+      console.log(`[Client #${index + 1}] RPC Live: ${ACTIVITY_TYPE} ${APP_NAME}${DETAILS ? ' | ' + DETAILS : ''}${STATE ? ' | ' + STATE : ''}`);
     } catch (err) {
       console.error(`[Client #${index + 1}] Presence set error:`, err.message);
     }
