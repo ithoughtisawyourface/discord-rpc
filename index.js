@@ -19,12 +19,16 @@ process.on('unhandledRejection', (reason, promise) => {
 // 2. Configuration Settings
 // ---------------------------------------------------------------------------
 const PORT = process.env.PORT || 3000;
-const APP_NAME = process.env.APP_NAME || 'Liminal Space';
-const ACTIVITY_TYPE = process.env.ACTIVITY_TYPE || 'WATCHING';
-const DETAILS = process.env.DETAILS || '<3';
-const STATE = process.env.STATE || 'Im still alive';
-const LARGE_IMAGE_URL = process.env.LARGE_IMAGE_URL || 'https://i.pinimg.com/originals/27/ed/a4/27eda4c49c4fa03797eefa8c406e8a9a.gif';
-const LARGE_IMAGE_TEXT = process.env.LARGE_IMAGE_TEXT || 'Liminal Space';
+const APP_NAME = process.env.APP_NAME || 'Arcturus';
+const ACTIVITY_TYPE = process.env.ACTIVITY_TYPE || 'PLAYING';
+const DETAILS = process.env.DETAILS || 'Playing Factions';
+const STATE = process.env.STATE || 'play.arcturusmc.org';
+const LARGE_IMAGE_URL = process.env.LARGE_IMAGE_URL || 'https://i.pinimg.com/736x/86/aa/a3/86aaa35ed00c6f3469fa95cd79a04abb.jpg';
+const LARGE_IMAGE_TEXT = process.env.LARGE_IMAGE_TEXT || 'Arcturus';
+const BUTTON1_NAME = process.env.BUTTON1_NAME || 'Discord 💎';
+const BUTTON1_URL = process.env.BUTTON1_URL || 'https://discord.com/invite/DTR6serkeM';
+const BUTTON2_NAME = process.env.BUTTON2_NAME || 'Web 💫';
+const BUTTON2_URL = process.env.BUTTON2_URL || 'https://www.arcturusmc.org/';
 const APPLICATION_ID = process.env.APPLICATION_ID || '1077283441369944227';
 const MEMORY_THRESHOLD_MB = 400; // 0.4 GB Railway threshold
 const MEMORY_THRESHOLD_BYTES = MEMORY_THRESHOLD_MB * 1024 * 1024;
@@ -222,13 +226,34 @@ async function buildPresence(client) {
       } else {
         presence.setAssetsLargeImage(LARGE_IMAGE_URL);
       }
-    } catch {
-      presence.setAssetsLargeImage(LARGE_IMAGE_URL);
+    } catch (imgErr) {
+      console.warn('[Presence Warning] Could not resolve external image asset:', imgErr.message);
+      try {
+        presence.setAssetsLargeImage(LARGE_IMAGE_URL);
+      } catch {
+        // Safe fallback if Discord rejects raw external URL
+      }
     }
   }
 
   if (LARGE_IMAGE_TEXT) {
     presence.setAssetsLargeText(LARGE_IMAGE_TEXT);
+  }
+
+  if (BUTTON1_NAME && BUTTON1_URL) {
+    try {
+      presence.addButton(BUTTON1_NAME, BUTTON1_URL);
+    } catch (err) {
+      console.warn('[Presence Warning] Failed to add Button 1:', err.message);
+    }
+  }
+
+  if (BUTTON2_NAME && BUTTON2_URL) {
+    try {
+      presence.addButton(BUTTON2_NAME, BUTTON2_URL);
+    } catch (err) {
+      console.warn('[Presence Warning] Failed to add Button 2:', err.message);
+    }
   }
 
   return presence;
@@ -276,7 +301,7 @@ function launchClient(token, index) {
     try {
       const presence = await buildPresence(client);
       client.user.setPresence({ activities: [presence] });
-      console.log(`[Client #${index + 1}] RPC Live: Watching ${APP_NAME} | ${DETAILS} | ${STATE}`);
+      console.log(`[Client #${index + 1}] RPC Live: ${ACTIVITY_TYPE} ${APP_NAME} | ${DETAILS} | ${STATE}`);
     } catch (err) {
       console.error(`[Client #${index + 1}] Presence set error:`, err.message);
     }
