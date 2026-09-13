@@ -25,7 +25,10 @@ const LEGACY_APP_NAMES = ['Liminal Space', 'City'];
 const LEGACY_ACTIVITIES = ['WATCHING'];
 const LEGACY_DETAILS = ['<3'];
 const LEGACY_STATES = ['Im still alive', 'play.arcturusmc.org'];
-const LEGACY_IMAGES = ['https://i.pinimg.com/originals/27/ed/a4/27eda4c49c4fa03797eefa8c406e8a9a.gif'];
+const LEGACY_IMAGES = [
+  'https://i.pinimg.com/originals/27/ed/a4/27eda4c49c4fa03797eefa8c406e8a9a.gif',
+  'https://i.pinimg.com/736x/f1/a6/59/f1a6598e51b4659a5b903fa068dc9686.jpg'
+];
 const LEGACY_APP_IDS = ['1077283441369944227'];
 
 const rawAppName = process.env.APP_NAME ? process.env.APP_NAME.trim() : null;
@@ -40,8 +43,9 @@ const DETAILS = (rawDetails && !LEGACY_DETAILS.includes(rawDetails)) ? rawDetail
 const rawState = process.env.STATE ? process.env.STATE.trim() : null;
 const STATE = (rawState && !LEGACY_STATES.includes(rawState)) ? rawState : '';
 
+const DEFAULT_TRANSPARENT_LOGO = 'https://cdn.discordapp.com/app-icons/1548379245787480074/68c28d1fde6e93537bdf84f4293fd45f.png';
 const rawLargeImage = process.env.LARGE_IMAGE_URL ? process.env.LARGE_IMAGE_URL.trim() : null;
-const LARGE_IMAGE_URL = (rawLargeImage && !LEGACY_IMAGES.includes(rawLargeImage)) ? rawLargeImage : 'https://i.pinimg.com/736x/f1/a6/59/f1a6598e51b4659a5b903fa068dc9686.jpg';
+const LARGE_IMAGE_URL = (rawLargeImage && !LEGACY_IMAGES.includes(rawLargeImage)) ? rawLargeImage : DEFAULT_TRANSPARENT_LOGO;
 
 const LARGE_IMAGE_TEXT = process.env.LARGE_IMAGE_TEXT || 'Arcturus';
 const BUTTON1_NAME = process.env.BUTTON1_NAME || 'Discord 💎';
@@ -236,6 +240,8 @@ setInterval(cleanMemory, 30 * 1000);
 // ---------------------------------------------------------------------------
 // 7. Rich Presence Builder
 // ---------------------------------------------------------------------------
+let cachedExternalAsset = null;
+
 async function buildPresence(client) {
   const presence = new RichPresence(client)
     .setApplicationId(APPLICATION_ID)
@@ -253,10 +259,23 @@ async function buildPresence(client) {
 
   if (LARGE_IMAGE_URL) {
     try {
-      if (typeof RichPresence.getExternal === 'function') {
+      // 1. Direct Discord CDN / App Icon / Media Proxy assets work natively for ALL accounts
+      if (
+        LARGE_IMAGE_URL.includes('cdn.discordapp.com') ||
+        LARGE_IMAGE_URL.includes('media.discordapp.net') ||
+        LARGE_IMAGE_URL.startsWith('mp:') ||
+        /^[0-9]{17,19}$/.test(LARGE_IMAGE_URL)
+      ) {
+        presence.setAssetsLargeImage(LARGE_IMAGE_URL);
+      } else if (cachedExternalAsset) {
+        // 2. Reuse resolved external asset path if previously generated
+        presence.setAssetsLargeImage(cachedExternalAsset);
+      } else if (typeof RichPresence.getExternal === 'function') {
+        // 3. Resolve external URL via owner client
         const externalAssets = await RichPresence.getExternal(client, APPLICATION_ID, LARGE_IMAGE_URL);
         if (externalAssets && externalAssets.length > 0 && externalAssets[0]?.external_asset_path) {
-          presence.setAssetsLargeImage(externalAssets[0].external_asset_path);
+          cachedExternalAsset = externalAssets[0].external_asset_path;
+          presence.setAssetsLargeImage(cachedExternalAsset);
         } else {
           presence.setAssetsLargeImage(LARGE_IMAGE_URL);
         }
@@ -265,10 +284,11 @@ async function buildPresence(client) {
       }
     } catch (imgErr) {
       console.warn('[Presence Warning] Could not resolve external image asset:', imgErr.message);
-      try {
-        presence.setAssetsLargeImage(LARGE_IMAGE_URL);
-      } catch {
-        // Safe fallback if Discord rejects raw external URL
+      if (cachedExternalAsset) {
+        presence.setAssetsLargeImage(cachedExternalAsset);
+      } else {
+        // Fallback to Discord CDN transparent logo that works on every account
+        presence.setAssetsLargeImage(DEFAULT_TRANSPARENT_LOGO);
       }
     }
   }

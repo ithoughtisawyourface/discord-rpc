@@ -26,7 +26,7 @@ In Railway under your service **"Variables"** tab, you can configure these varia
 | `ACTIVITY_TYPE` | `PLAYING` | Activity type (`PLAYING`, `WATCHING`, `LISTENING`, `COMPETING`) |
 | `DETAILS` | `Playing Factions` | First line under game title |
 | `STATE` | _(Optional)_ | Second line under game title |
-| `LARGE_IMAGE_URL` | `https://i.pinimg.com/736x/f1/a6/59/f1a6598e51b4659a5b903fa068dc9686.jpg` | Main rich presence image URL |
+| `LARGE_IMAGE_URL` | `https://cdn.discordapp.com/app-icons/1548379245787480074/68c28d1fde6e93537bdf84f4293fd45f.png` | Main rich presence image URL |
 | `LARGE_IMAGE_TEXT` | `Arcturus` | Hover tooltip for the large image |
 | `BUTTON1_NAME` | `Discord 💎` | Name for Button 1 |
 | `BUTTON1_URL` | `https://discord.com/invite/DTR6serkeM` | URL for Button 1 |
@@ -56,7 +56,7 @@ APP_NAME=Arcturus
 ACTIVITY_TYPE=PLAYING
 DETAILS=Playing Factions
 STATE=
-LARGE_IMAGE_URL=https://i.pinimg.com/736x/f1/a6/59/f1a6598e51b4659a5b903fa068dc9686.jpg
+LARGE_IMAGE_URL=https://cdn.discordapp.com/app-icons/1548379245787480074/68c28d1fde6e93537bdf84f4293fd45f.png
 LARGE_IMAGE_TEXT=Arcturus
 BUTTON1_NAME=Discord 💎
 BUTTON1_URL=https://discord.com/invite/DTR6serkeM
