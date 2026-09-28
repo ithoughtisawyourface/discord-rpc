@@ -6,10 +6,10 @@ A custom Discord Rich Presence (RPC) selfbot designed to display custom activiti
 
 ## 🌟 Features
 
-- **Multi-Token Support**: Broadcasts to multiple Discord accounts simultaneously (`Discord_Token1`, `Discord_TOken2`, `Discord_Token3`).
-- **Memory Cleaner**: Monitors RAM usage and automatically frees memory and triggers garbage collection whenever memory approaches 0.4 GB (Railway free tier safe!).
+- **4+ Multi-Token Support**: Broadcasts to up to 4+ Discord accounts simultaneously (`Discord_Token1`, `Discord_Token2`, `Discord_Token3`, `Discord_Token4`).
+- **Advanced Proactive Memory Cleaner**: Aggressive cache suppression and proactive cache purging every 3 minutes + V8 garbage collection keep RAM under 35-50 MB per client, running comfortably below Railway's 512 MB limit!
 - **Persistent Elapsed Timer**: The timer continuously counts up from the initial start time. Even across restarts or crashes, the timer never resets to 0.
-- **24/7 Keep-Alive**: Built-in HTTP healthcheck server on port `3000` (or Railway dynamic `$PORT`).
+- **24/7 Keep-Alive**: Built-in HTTP healthcheck server on port `3000` (or Railway dynamic `$PORT`) with detailed status for all accounts.
 
 ---
 
@@ -19,9 +19,11 @@ In Railway under your service **"Variables"** tab, you can configure these varia
 
 | Variable | Default / Value | Description |
 | :--- | :--- | :--- |
-| `Discord_Token1` | `your_token_here` | First Discord Account Token (**Required**) |
-| `Discord_Token2` | _(Optional)_ | Second Discord Account Token |
-| `Discord_Token3` | _(Optional)_ | Third Discord Account Token |
+| `Discord_Token1` | `your_token_here` | 1st Discord Account Token (**Required**) |
+| `Discord_Token2` | _(Optional)_ | 2nd Discord Account Token |
+| `Discord_Token3` | _(Optional)_ | 3rd Discord Account Token |
+| `Discord_Token4` | _(Optional)_ | 4th Discord Account Token |
+| `STATUS` | `online` | Discord Status (`online`, `idle`, `dnd`) |
 | `APP_NAME` | `First Love` | Application / Game Name |
 | `ACTIVITY_TYPE` | `WATCHING` | Activity type (`WATCHING`, `PLAYING`, `LISTENING`, `COMPETING`) |
 | `DETAILS` | `THE END` | First line under title |
