@@ -15,23 +15,23 @@ A custom Discord Rich Presence (RPC) selfbot designed to display custom activiti
 
 ## 🚀 Railway Deployment Variables
 
-In Railway under your service **"Variables"** tab, you can configure these variables (defaults for Arcturus are already built-in!):
+In Railway under your service **"Variables"** tab, you can configure these variables (defaults for First Love are already built-in!):
 
 | Variable | Default / Value | Description |
 | :--- | :--- | :--- |
 | `Discord_Token1` | `your_token_here` | First Discord Account Token (**Required**) |
 | `Discord_Token2` | _(Optional)_ | Second Discord Account Token |
 | `Discord_Token3` | _(Optional)_ | Third Discord Account Token |
-| `APP_NAME` | `Arcturus` | Application / Game Name |
-| `ACTIVITY_TYPE` | `PLAYING` | Activity type (`PLAYING`, `WATCHING`, `LISTENING`, `COMPETING`) |
-| `DETAILS` | `Playing Factions` | First line under game title |
-| `STATE` | _(Optional)_ | Second line under game title |
-| `LARGE_IMAGE_URL` | `https://cdn.discordapp.com/app-icons/1548379245787480074/68c28d1fde6e93537bdf84f4293fd45f.png` | Main rich presence image URL |
-| `LARGE_IMAGE_TEXT` | `Arcturus` | Hover tooltip for the large image |
-| `BUTTON1_NAME` | `Discord 💎` | Name for Button 1 |
-| `BUTTON1_URL` | `https://discord.com/invite/DTR6serkeM` | URL for Button 1 |
-| `BUTTON2_NAME` | `Web 💫` | Name for Button 2 |
-| `BUTTON2_URL` | `https://www.arcturusmc.org/` | URL for Button 2 |
+| `APP_NAME` | `First Love` | Application / Game Name |
+| `ACTIVITY_TYPE` | `WATCHING` | Activity type (`WATCHING`, `PLAYING`, `LISTENING`, `COMPETING`) |
+| `DETAILS` | `THE END` | First line under title |
+| `STATE` | `End of The greatest chapter` | Second line under title |
+| `LARGE_IMAGE_URL` | `https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGpqNDUzeTJpZTd5ZWY0cjVlaXZjcTFneTdxdmc4eG42ejR2OHc4dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YXKXghuo1wEYWCjUpw/giphy.gif` | Main rich presence GIF / image URL |
+| `LARGE_IMAGE_TEXT` | `First Love` | Hover tooltip for the large image |
+| `BUTTON1_NAME` | _(Optional)_ | Name for Button 1 |
+| `BUTTON1_URL` | _(Optional)_ | URL for Button 1 |
+| `BUTTON2_NAME` | _(Optional)_ | Name for Button 2 |
+| `BUTTON2_URL` | _(Optional)_ | URL for Button 2 |
 | `APPLICATION_ID` | `1548379245787480074` | Discord Application ID for assets |
 | `PUBLIC_KEY` | `f57dfc860d81a34113e9f676d2975ed37bbf9d7121c3c485cfbb22770b7c6ff9` | Discord Application Public Key |
 | `PORT` | `3000` | Web server port for health check |
@@ -49,19 +49,15 @@ npm install
 ```
 
 ### 3. Configure Environment
-Your `.env` is already configured with the Arcturus RPC settings and your Discord token:
+Your `.env` is configured with the First Love RPC settings:
 ```env
 Discord_Token1=your_token_here
-APP_NAME=Arcturus
-ACTIVITY_TYPE=PLAYING
-DETAILS=Playing Factions
-STATE=
-LARGE_IMAGE_URL=https://cdn.discordapp.com/app-icons/1548379245787480074/68c28d1fde6e93537bdf84f4293fd45f.png
-LARGE_IMAGE_TEXT=Arcturus
-BUTTON1_NAME=Discord 💎
-BUTTON1_URL=https://discord.com/invite/DTR6serkeM
-BUTTON2_NAME=Web 💫
-BUTTON2_URL=https://www.arcturusmc.org/
+APP_NAME=First Love
+ACTIVITY_TYPE=WATCHING
+DETAILS=THE END
+STATE=End of The greatest chapter
+LARGE_IMAGE_URL=https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGpqNDUzeTJpZTd5ZWY0cjVlaXZjcTFneTdxdmc4eG42ejR2OHc4dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YXKXghuo1wEYWCjUpw/giphy.gif
+LARGE_IMAGE_TEXT=First Love
 APPLICATION_ID=1548379245787480074
 PUBLIC_KEY=f57dfc860d81a34113e9f676d2975ed37bbf9d7121c3c485cfbb22770b7c6ff9
 PORT=3000

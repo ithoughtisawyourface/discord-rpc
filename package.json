@@ -1,7 +1,7 @@
 {
-  "name": "discord-rpc-city",
+  "name": "discord-rpc",
   "version": "1.0.0",
-  "description": "Discord Custom Rich Presence Selfbot for 24/7 Railway hosting",
+  "description": "Discord Custom Rich Presence (First Love) for 24/7 Railway hosting",
   "main": "index.js",
   "scripts": {
     "start": "node --expose-gc index.js",

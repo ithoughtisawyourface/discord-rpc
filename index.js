@@ -18,40 +18,72 @@ process.on('unhandledRejection', (reason, promise) => {
 // ---------------------------------------------------------------------------
 // 2. Configuration Settings
 // ---------------------------------------------------------------------------
+// 2. Configuration Settings
+// ---------------------------------------------------------------------------
 const PORT = process.env.PORT || 3000;
 
 // Legacy values to ignore if leftover in Railway environment variables
-const LEGACY_APP_NAMES = ['Liminal Space', 'City'];
-const LEGACY_ACTIVITIES = ['WATCHING'];
-const LEGACY_DETAILS = ['<3'];
+const LEGACY_APP_NAMES = ['Liminal Space', 'City', 'Arcturus'];
+const LEGACY_ACTIVITIES = ['PLAYING'];
+const LEGACY_DETAILS = ['<3', 'Playing Factions'];
 const LEGACY_STATES = ['Im still alive', 'play.arcturusmc.org'];
 const LEGACY_IMAGES = [
   'https://i.pinimg.com/originals/27/ed/a4/27eda4c49c4fa03797eefa8c406e8a9a.gif',
-  'https://i.pinimg.com/736x/f1/a6/59/f1a6598e51b4659a5b903fa068dc9686.jpg'
+  'https://i.pinimg.com/736x/f1/a6/59/f1a6598e51b4659a5b903fa068dc9686.jpg',
+  'https://cdn.discordapp.com/app-icons/1548379245787480074/68c28d1fde6e93537bdf84f4293fd45f.png'
 ];
 const LEGACY_APP_IDS = ['1077283441369944227'];
 
 const rawAppName = process.env.APP_NAME ? process.env.APP_NAME.trim() : null;
-const APP_NAME = (rawAppName && !LEGACY_APP_NAMES.includes(rawAppName)) ? rawAppName : 'Arcturus';
+const APP_NAME = (rawAppName && !LEGACY_APP_NAMES.includes(rawAppName)) ? rawAppName : 'First Love';
 
-const rawActivityType = process.env.ACTIVITY_TYPE ? process.env.ACTIVITY_TYPE.trim().toUpperCase() : null;
-const ACTIVITY_TYPE = (rawActivityType && !LEGACY_ACTIVITIES.includes(rawActivityType) && rawActivityType !== 'WATCHING') ? (rawActivityType === 'PLAYING' || rawActivityType === '0' ? 0 : rawActivityType) : 0;
+function parseActivityType(val) {
+  if (!val) return 3; // Default to WATCHING (3)
+  const clean = val.toString().trim().toUpperCase();
+  switch (clean) {
+    case 'PLAYING':
+    case '0':
+      return 0;
+    case 'STREAMING':
+    case '1':
+      return 1;
+    case 'LISTENING':
+    case '2':
+      return 2;
+    case 'WATCHING':
+    case 'WATCING':
+    case '3':
+      return 3;
+    case 'COMPETING':
+    case '5':
+      return 5;
+    default:
+      return isNaN(Number(clean)) ? 3 : Number(clean);
+  }
+}
+
+const rawActivityType = process.env.ACTIVITY_TYPE ? process.env.ACTIVITY_TYPE.trim() : null;
+const ACTIVITY_TYPE = (rawActivityType && !LEGACY_ACTIVITIES.includes(rawActivityType.toUpperCase()))
+  ? parseActivityType(rawActivityType)
+  : 3; // Default WATCHING
 
 const rawDetails = process.env.DETAILS ? process.env.DETAILS.trim() : null;
-const DETAILS = (rawDetails && !LEGACY_DETAILS.includes(rawDetails)) ? rawDetails : 'Playing Factions';
+const DETAILS = (rawDetails && !LEGACY_DETAILS.includes(rawDetails)) ? rawDetails : 'THE END';
 
 const rawState = process.env.STATE ? process.env.STATE.trim() : null;
-const STATE = (rawState && !LEGACY_STATES.includes(rawState)) ? rawState : '';
+const STATE = (rawState && !LEGACY_STATES.includes(rawState)) ? rawState : 'End of The greatest chapter';
 
-const DEFAULT_TRANSPARENT_LOGO = 'https://cdn.discordapp.com/app-icons/1548379245787480074/68c28d1fde6e93537bdf84f4293fd45f.png';
+const DEFAULT_LARGE_IMAGE = 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGpqNDUzeTJpZTd5ZWY0cjVlaXZjcTFneTdxdmc4eG42ejR2OHc4dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YXKXghuo1wEYWCjUpw/giphy.gif';
+const FALLBACK_LARGE_IMAGE = 'https://media.giphy.com/media/YXKXghuo1wEYWCjUpw/giphy.gif';
+
 const rawLargeImage = process.env.LARGE_IMAGE_URL ? process.env.LARGE_IMAGE_URL.trim() : null;
-const LARGE_IMAGE_URL = (rawLargeImage && !LEGACY_IMAGES.includes(rawLargeImage)) ? rawLargeImage : DEFAULT_TRANSPARENT_LOGO;
+const LARGE_IMAGE_URL = (rawLargeImage && !LEGACY_IMAGES.includes(rawLargeImage)) ? rawLargeImage : DEFAULT_LARGE_IMAGE;
 
-const LARGE_IMAGE_TEXT = process.env.LARGE_IMAGE_TEXT || 'Arcturus';
-const BUTTON1_NAME = process.env.BUTTON1_NAME || 'Discord 💎';
-const BUTTON1_URL = process.env.BUTTON1_URL || 'https://discord.com/invite/DTR6serkeM';
-const BUTTON2_NAME = process.env.BUTTON2_NAME || 'Web 💫';
-const BUTTON2_URL = process.env.BUTTON2_URL || 'https://www.arcturusmc.org/';
+const LARGE_IMAGE_TEXT = process.env.LARGE_IMAGE_TEXT || 'First Love';
+const BUTTON1_NAME = process.env.BUTTON1_NAME || '';
+const BUTTON1_URL = process.env.BUTTON1_URL || '';
+const BUTTON2_NAME = process.env.BUTTON2_NAME || '';
+const BUTTON2_URL = process.env.BUTTON2_URL || '';
 
 const rawAppId = process.env.APPLICATION_ID ? process.env.APPLICATION_ID.trim() : null;
 const APPLICATION_ID = (rawAppId && !LEGACY_APP_IDS.includes(rawAppId)) ? rawAppId : '1548379245787480074';
@@ -283,12 +315,24 @@ async function buildPresence(client) {
         presence.setAssetsLargeImage(LARGE_IMAGE_URL);
       }
     } catch (imgErr) {
-      console.warn('[Presence Warning] Could not resolve external image asset:', imgErr.message);
-      if (cachedExternalAsset) {
+      console.warn('[Presence Warning] Primary image failed:', imgErr.message);
+      if (FALLBACK_LARGE_IMAGE && LARGE_IMAGE_URL !== FALLBACK_LARGE_IMAGE) {
+        try {
+          const fallbackAssets = await RichPresence.getExternal(client, APPLICATION_ID, FALLBACK_LARGE_IMAGE);
+          if (fallbackAssets && fallbackAssets.length > 0 && fallbackAssets[0]?.external_asset_path) {
+            cachedExternalAsset = fallbackAssets[0].external_asset_path;
+            presence.setAssetsLargeImage(cachedExternalAsset);
+          } else {
+            presence.setAssetsLargeImage(FALLBACK_LARGE_IMAGE);
+          }
+        } catch (fbErr) {
+          console.warn('[Presence Warning] Fallback image also failed:', fbErr.message);
+          presence.setAssetsLargeImage(FALLBACK_LARGE_IMAGE);
+        }
+      } else if (cachedExternalAsset) {
         presence.setAssetsLargeImage(cachedExternalAsset);
       } else {
-        // Fallback to Discord CDN transparent logo that works on every account
-        presence.setAssetsLargeImage(DEFAULT_TRANSPARENT_LOGO);
+        presence.setAssetsLargeImage(FALLBACK_LARGE_IMAGE);
       }
     }
   }
@@ -358,7 +402,8 @@ function launchClient(token, index) {
     try {
       const presence = await buildPresence(client);
       client.user.setPresence({ activities: [presence] });
-      const typeLabel = (ACTIVITY_TYPE === 0 || ACTIVITY_TYPE === 'PLAYING') ? 'PLAYING' : ACTIVITY_TYPE;
+      const typeNames = { 0: 'PLAYING', 1: 'STREAMING', 2: 'LISTENING', 3: 'WATCHING', 5: 'COMPETING' };
+      const typeLabel = typeNames[ACTIVITY_TYPE] || ACTIVITY_TYPE;
       console.log(`[Client #${index + 1}] RPC Live: ${typeLabel} ${APP_NAME}${DETAILS ? ' | ' + DETAILS : ''}${STATE ? ' | ' + STATE : ''}`);
     } catch (err) {
       console.error(`[Client #${index + 1}] Presence set error:`, err.message);
