@@ -18,8 +18,6 @@ process.on('unhandledRejection', (reason, promise) => {
 // ---------------------------------------------------------------------------
 // 2. Configuration Settings
 // ---------------------------------------------------------------------------
-// 2. Configuration Settings
-// ---------------------------------------------------------------------------
 const PORT = process.env.PORT || 3000;
 
 // Legacy values to ignore if leftover in Railway environment variables
