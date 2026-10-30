@@ -1,7 +1,7 @@
 {
   "name": "discord-rpc",
   "version": "1.0.0",
-  "description": "Discord Custom Rich Presence (First Love) for 24/7 Railway hosting",
+  "description": "Discord Custom Rich Presence (Memories) with alternating GIFs for 24/7 Bot-Hosting / Railway hosting",
   "main": "index.js",
   "scripts": {
     "start": "node --expose-gc index.js",
@@ -19,6 +19,7 @@
     "rpc",
     "rich-presence",
     "selfbot",
+    "bot-hosting",
     "railway"
   ],
   "author": "",
